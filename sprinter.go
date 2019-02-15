@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 
@@ -153,8 +155,14 @@ func (s *Sprinter) ApplyManifest(ctx context.Context, repository *Repo) error {
 		if err != nil {
 			return err
 		}
+
+		eg := errgroup.Group{}
 		for _, m := range ms {
-			if err := s.github.Milestone.Delete(ctx, owner, repo, m); err != nil {
+			m := m
+			eg.Go(func() error {
+				return s.github.Milestone.Delete(ctx, owner, repo, m)
+			})
+			if err := eg.Wait(); err != nil {
 				return err
 			}
 		}
@@ -164,8 +172,12 @@ func (s *Sprinter) ApplyManifest(ctx context.Context, repository *Repo) error {
 	if err != nil {
 		return err
 	}
+	eg := errgroup.Group{}
 	for _, m := range milestones {
-		if err := s.github.Milestone.Create(ctx, owner, repo, m); err != nil {
+		eg.Go(func() error {
+			return s.github.Milestone.Create(ctx, owner, repo, m)
+		})
+		if err := eg.Wait(); err != nil {
 			return err
 		}
 	}
