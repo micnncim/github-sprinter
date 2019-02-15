@@ -40,6 +40,7 @@ func (s *MilestoneService) Create(ctx context.Context, owner, repo string, miles
 	if err != nil {
 		return err
 	}
+	dueOn = dueOn.Add(day)
 	ghMilestone := &github.Milestone{
 		Title:       github.String(milestone.Title),
 		State:       github.String(milestone.State),
