@@ -17,7 +17,7 @@ $ go get -u github.com/micnncim/github-sprinter/cmd/github-sprinter
 $ github-sprinter
 ```
 
-Specify manifest (default=`sprinter.yaml`).
+Specify manifest (default=`sprint.yaml`).
 
 ```
 $ github-sprinter -manifest manifest.yaml
