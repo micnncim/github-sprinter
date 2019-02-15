@@ -133,11 +133,6 @@ func (s *Sprinter) ApplyManifest(ctx context.Context, repository *Repo) error {
 	}
 	owner, repo := slugs[0], slugs[1]
 
-	milestones, err := s.Manifest.Sprint.GenerateMilestones()
-	if err != nil {
-		return err
-	}
-
 	if s.github.update {
 		// delete all milestones (state="open")
 		ms, err := s.github.Milestone.List(ctx, owner, repo)
@@ -151,6 +146,10 @@ func (s *Sprinter) ApplyManifest(ctx context.Context, repository *Repo) error {
 		}
 	}
 
+	milestones, err := s.Manifest.Sprint.GenerateMilestones()
+	if err != nil {
+		return err
+	}
 	for _, m := range milestones {
 		if err := s.github.Milestone.Create(ctx, owner, repo, m); err != nil {
 			return err
