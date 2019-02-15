@@ -68,6 +68,9 @@ func (s *Sprint) GenerateMilestones() ([]*Milestone, error) {
 				return nil, err
 			}
 
+			if startOn.After(termDueOn) {
+				break
+			}
 			if dueOn.After(termDueOn) {
 				dueOn = termDueOn
 				m, err := NewMilestone(sid, s.TitleFormat, startOn, dueOn)
