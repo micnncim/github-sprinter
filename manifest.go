@@ -61,7 +61,7 @@ func (s *Sprint) GenerateMilestones() ([]*Milestone, error) {
 		if err != nil {
 			return nil, err
 		}
-		startOn, dueOn := termStartOn, termStartOn.Add(d)
+		startOn, dueOn := termStartOn, termStartOn.Add(d).Add(-day)
 		for sid := 1; ; sid++ {
 			startOn, dueOn, err = s.Ignore.OmitIgnored(startOn, dueOn, d)
 			if err != nil {
