@@ -58,31 +58,40 @@ func (s *MilestoneService) Create(ctx context.Context, owner, repo string, miles
 }
 
 func (s *MilestoneService) List(ctx context.Context, owner, repo string) ([]*Milestone, error) {
-	ghMilestones, _, err := s.client.Issues.ListMilestones(
-		ctx,
-		owner,
-		repo,
-		&github.MilestoneListOptions{
-			ListOptions: github.ListOptions{PerPage: 10},
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-
+	opt := github.ListOptions{PerPage: 10}
 	var milestones []*Milestone
-	for _, ghMilestone := range ghMilestones {
-		description := ""
-		if ghMilestones != nil {
-			description = *ghMilestone.Description
+
+	for {
+		ghMilestones, resp, err := s.client.Issues.ListMilestones(
+			ctx,
+			owner,
+			repo,
+			&github.MilestoneListOptions{
+				ListOptions: opt,
+			},
+		)
+		if err != nil {
+			return nil, err
 		}
-		milestones = append(milestones, &Milestone{
-			Number:      *ghMilestone.Number,
-			Title:       *ghMilestone.Title,
-			State:       *ghMilestone.State,
-			Description: description,
-			DueOn:       ghMilestone.DueOn.Format(timeFormat),
-		})
+
+		for _, ghMilestone := range ghMilestones {
+			description := ""
+			if ghMilestones != nil {
+				description = *ghMilestone.Description
+			}
+			milestones = append(milestones, &Milestone{
+				Number:      *ghMilestone.Number,
+				Title:       *ghMilestone.Title,
+				State:       *ghMilestone.State,
+				Description: description,
+				DueOn:       ghMilestone.DueOn.Format(timeFormat),
+			})
+		}
+
+		if resp.NextPage == 0 {
+			break
+		}
+		opt.Page = resp.NextPage
 	}
 
 	return milestones, nil
