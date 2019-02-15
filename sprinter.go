@@ -51,7 +51,6 @@ func (s *MilestoneService) Create(ctx context.Context, owner, repo string, miles
 		return nil
 	}
 	if _, _, err := s.client.Issues.CreateMilestone(ctx, owner, repo, ghMilestone); err != nil {
-		fmt.Println("DEBUG")
 		return err
 	}
 	return nil
