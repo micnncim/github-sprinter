@@ -30,8 +30,8 @@ $ github-sprinter -dry-run
 ```
 
 Update (including deletion) available.  
-If not specify `-update`, `github-sprinter` will not delete any milestone.
-Even though `github-sprinter` delete some milestones, only `open` milestones will deleted.
+If not specify `-update`, `github-sprinter` will not delete any milestone and will create some milestones.
+Even though `github-sprinter` deletes some milestones, only `open` milestones will deleted.
 
 ```
 $ github-sprinter -update
