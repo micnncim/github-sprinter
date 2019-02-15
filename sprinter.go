@@ -70,13 +70,17 @@ func (s *MilestoneService) List(ctx context.Context, owner, repo string) ([]*Mil
 	}
 
 	var milestones []*Milestone
-	for _, m := range ghMilestones {
+	for _, ghMilestone := range ghMilestones {
+		description := ""
+		if ghMilestones != nil {
+			description = *ghMilestone.Description
+		}
 		milestones = append(milestones, &Milestone{
-			Number:      *m.Number,
-			Title:       *m.Title,
-			State:       *m.State,
-			Description: *m.Description,
-			DueOn:       m.DueOn.Format(timeFormat),
+			Number:      *ghMilestone.Number,
+			Title:       *ghMilestone.Title,
+			State:       *ghMilestone.State,
+			Description: description,
+			DueOn:       ghMilestone.DueOn.Format(timeFormat),
 		})
 	}
 
