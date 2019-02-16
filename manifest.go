@@ -34,7 +34,7 @@ func loadManifest(path string) (*Manifest, error) {
 	if err := yaml.Unmarshal(buf, &m); err != nil {
 		return nil, err
 	}
-	return &m, err
+	return &m, nil
 }
 
 type Manifest struct {

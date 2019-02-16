@@ -38,6 +38,10 @@ type Sprinter struct {
 }
 
 func (s *MilestoneService) Create(ctx context.Context, owner, repo string, milestone *Milestone) error {
+	log.Printf("create %q in %s/%s", milestone.Title, owner, repo)
+	if s.client.dryRun {
+		return nil
+	}
 	_, dueOn, err := milestone.ParseDate()
 	if err != nil {
 		return err
@@ -48,10 +52,6 @@ func (s *MilestoneService) Create(ctx context.Context, owner, repo string, miles
 		State:       github.String(milestone.State),
 		Description: github.String(milestone.Description),
 		DueOn:       &dueOn,
-	}
-	log.Printf("create %q in %s/%s", milestone.Title, owner, repo)
-	if s.client.dryRun {
-		return nil
 	}
 	if _, _, err := s.client.Issues.CreateMilestone(ctx, owner, repo, ghMilestone); err != nil {
 		return err
