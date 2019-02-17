@@ -68,8 +68,8 @@ repos:
 
 - Change duration of each sprint
 
-Change `sprint.duration` (`sprint.title_format` `sprint.terms` `sprint.ignore`)
-:warning: This operation **DELETE**s all open milestone once and creates new milestones
+Change `sprint.duration` (`sprint.title_format` `sprint.terms` `sprint.ignore`)  
+:warning: This operation **DELETE**s all open milestone once and creates new milestones (it means the links between milestones and issues will be removed)
 
 ```diff
 sprint:
@@ -92,8 +92,6 @@ sprint:
 repos:
   - name: micnncim/github-sprinter
 ```
-
-#### not `-update`
 
 - Add repository for the existing milestones
 
