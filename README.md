@@ -62,6 +62,51 @@ repos:
   - name: micnncim/github-sprinter
 ```
 
+### Use case
+
+#### `-update`
+
+- Change duration of each sprint
+
+Change `sprint.duration` (`sprint.title_format` `sprint.terms` `sprint.ignore`)
+:warning: This operation **DELETE**s all open milestone once and creates new milestones
+
+```diff
+sprint:
+- duration: 168h # 1 week (24h * 7d = 168h)
++ duration: 120h # 5 days (24h * 5d = 120h)
+```
+
+- Remove all milestones from some repository
+
+Remove all `sprint.terms` and stay `repos.name`
+
+```diff
+sprint:
+  terms:
+-    - start_on: 2019/04/01
+-      due_on: 2020/03/31
+-    - start_on: 2020/04/01
+-      due_on: 2021/03/31
+
+repos:
+  - name: micnncim/github-sprinter
+```
+
+#### not `-update`
+
+- Add repository for the existing milestones
+
+Remove the repositories where you don't want to change anything and add the repositories you want
+
+```diff
+repos:
+- - name: micnncim/github-sprinter-1
+- - name: micnncim/github-sprinter-2
++ - name: micnncim/github-sprinter-3
+```
+
+
 ## LICENSE
 
 [MIT](./MIT)
