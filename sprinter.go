@@ -7,12 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
+	"golang.org/x/sync/errgroup"
 
-	"github.com/google/go-github/v24/github"
+	"github.com/google/go-github/github"
 )
 
 type githubClient struct {
@@ -113,30 +112,37 @@ func (s *MilestoneService) Delete(ctx context.Context, owner, repo string, miles
 		return nil
 	}
 
-	_, err := s.client.Issues.DeleteMilestone(ctx, owner, repo, milestone.Number)
-	if err != nil {
+	if _, err := s.client.Issues.DeleteMilestone(ctx, owner, repo, milestone.Number); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (s *IssueService) ListByMilestone(ctx context.Context, owner, repo string, milestone *Milestone) ([]*Issue, error) {
-	ghIssues, _, err := s.client.Issues.ListByRepo(ctx, owner, repo, &github.IssueListByRepoOptions{
-		Milestone: strconv.Itoa(milestone.Number),
-		ListOptions: github.ListOptions{
-			PerPage: 10,
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-	issues := make([]*Issue, 0, len(ghIssues))
-	for _, ghIssue := range ghIssues {
-		issues = append(issues, &Issue{
-			Title: *ghIssue.Title,
-			URL:   *ghIssue.URL,
+	opt := github.ListOptions{PerPage: 10}
+	var issues []*Issue
+
+	for {
+		ghIssues, resp, err := s.client.Issues.ListByRepo(ctx, owner, repo, &github.IssueListByRepoOptions{
+			Milestone:   strconv.Itoa(milestone.Number),
+			ListOptions: opt,
 		})
+		if err != nil {
+			return nil, err
+		}
+		for _, ghIssue := range ghIssues {
+			issues = append(issues, &Issue{
+				Title: *ghIssue.Title,
+				URL:   *ghIssue.URL,
+			})
+		}
+
+		if resp.NextPage == 0 {
+			break
+		}
+		opt.Page = resp.NextPage
 	}
+
 	return issues, nil
 }
 
@@ -197,7 +203,7 @@ func (s *Sprinter) ApplyManifest(ctx context.Context, repository *Repo) error {
 					return err
 				}
 				for _, issue := range issues {
-					fmt.Printf("  dislink %q in %q\n", issue.Title, m.Title)
+					fmt.Printf("  - dislink %q in %q\n", issue.Title, m.Title)
 				}
 
 				return nil
