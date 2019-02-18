@@ -133,7 +133,7 @@ func (s *IssueService) ListByMilestone(ctx context.Context, owner, repo string, 
 		for _, ghIssue := range ghIssues {
 			issues = append(issues, &Issue{
 				Title: *ghIssue.Title,
-				URL:   *ghIssue.URL,
+				URL:   *ghIssue.HTMLURL,
 			})
 		}
 
@@ -203,7 +203,7 @@ func (s *Sprinter) ApplyManifest(ctx context.Context, repository *Repo) error {
 					return err
 				}
 				for _, issue := range issues {
-					fmt.Printf("  - dislink %q in %q\n", issue.Title, m.Title)
+					fmt.Printf("  - dislink %q url=%s\n", issue.Title, issue.URL)
 				}
 
 				return nil
