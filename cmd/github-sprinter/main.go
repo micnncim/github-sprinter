@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
+	"fmt"
+	"os"
 
 	"golang.org/x/sync/errgroup"
 
@@ -21,7 +22,8 @@ func main() {
 	ctx := context.Background()
 	sprinter, err := sprinter.NewSprinter(ctx, *manifest, *dryRun, *update)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	eg := errgroup.Group{}
 	for _, repo := range sprinter.Manifest.Repos {
@@ -32,6 +34,7 @@ func main() {
 	}
 
 	if err := eg.Wait(); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }

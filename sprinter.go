@@ -3,16 +3,15 @@ package github_sprinter
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
+	"strconv"
 	"strings"
-
-	"golang.org/x/sync/errgroup"
 
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
+	"golang.org/x/sync/errgroup"
 
-	"github.com/google/go-github/v24/github"
+	"github.com/google/go-github/github"
 )
 
 type githubClient struct {
@@ -24,9 +23,12 @@ type githubClient struct {
 	common service
 
 	Milestone *MilestoneService
+	Issue     *IssueService
 }
 
 type MilestoneService service
+
+type IssueService service
 
 type service struct {
 	client *githubClient
@@ -37,8 +39,13 @@ type Sprinter struct {
 	Manifest *Manifest
 }
 
+type Issue struct {
+	Title string
+	URL   string
+}
+
 func (s *MilestoneService) Create(ctx context.Context, owner, repo string, milestone *Milestone) error {
-	log.Printf("create %q in %s/%s", milestone.Title, owner, repo)
+	fmt.Printf("create %q in %s/%s\n", milestone.Title, owner, repo)
 	if s.client.dryRun {
 		return nil
 	}
@@ -100,16 +107,43 @@ func (s *MilestoneService) List(ctx context.Context, owner, repo string) ([]*Mil
 }
 
 func (s *MilestoneService) Delete(ctx context.Context, owner, repo string, milestone *Milestone) error {
-	log.Printf("delete %q in %s/%s", milestone.Title, owner, repo)
+	fmt.Printf("delete %q in %s/%s\n", milestone.Title, owner, repo)
 	if s.client.dryRun {
 		return nil
 	}
 
-	_, err := s.client.Issues.DeleteMilestone(ctx, owner, repo, milestone.Number)
-	if err != nil {
+	if _, err := s.client.Issues.DeleteMilestone(ctx, owner, repo, milestone.Number); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (s *IssueService) ListByMilestone(ctx context.Context, owner, repo string, milestone *Milestone) ([]*Issue, error) {
+	opt := github.ListOptions{PerPage: 10}
+	var issues []*Issue
+
+	for {
+		ghIssues, resp, err := s.client.Issues.ListByRepo(ctx, owner, repo, &github.IssueListByRepoOptions{
+			Milestone:   strconv.Itoa(milestone.Number),
+			ListOptions: opt,
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, ghIssue := range ghIssues {
+			issues = append(issues, &Issue{
+				Title: *ghIssue.Title,
+				URL:   *ghIssue.URL,
+			})
+		}
+
+		if resp.NextPage == 0 {
+			break
+		}
+		opt.Page = resp.NextPage
+	}
+
+	return issues, nil
 }
 
 func NewSprinter(ctx context.Context, configPath string, dryRun, update bool) (*Sprinter, error) {
@@ -136,6 +170,7 @@ func NewSprinter(ctx context.Context, configPath string, dryRun, update bool) (*
 	}
 	gc.common.client = gc
 	gc.Milestone = (*MilestoneService)(&gc.common)
+	gc.Issue = (*IssueService)(&gc.common)
 	return &Sprinter{
 		github:   gc,
 		Manifest: m,
@@ -160,7 +195,18 @@ func (s *Sprinter) ApplyManifest(ctx context.Context, repository *Repo) error {
 		for _, m := range ms {
 			m := m
 			eg.Go(func() error {
-				return s.github.Milestone.Delete(ctx, owner, repo, m)
+				if err := s.github.Milestone.Delete(ctx, owner, repo, m); err != nil {
+					return err
+				}
+				issues, err := s.github.Issue.ListByMilestone(ctx, owner, repo, m)
+				if err != nil {
+					return err
+				}
+				for _, issue := range issues {
+					fmt.Printf("  - dislink %q in %q\n", issue.Title, m.Title)
+				}
+
+				return nil
 			})
 			if err := eg.Wait(); err != nil {
 				return err
