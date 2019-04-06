@@ -3,7 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/micnncim/github-sprinter)](https://goreportcard.com/report/github.com/micnncim/github-sprinter)
 [![CodeFactor](https://www.codefactor.io/repository/github/micnncim/github-sprinter/badge)](https://www.codefactor.io/repository/github/micnncim/github-sprinter)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3ce77cb742824ffb9fb8610b0e4b1e25)](https://www.codacy.com/app/micnncim/github-sprinter?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=micnncim/github-sprinter&amp;utm_campaign=Badge_Grade)
-![MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+[![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 CLI managing GitHub milestones as sprints with YAML file.  
 Strongly inspired by [b4b4r07/github-labeler](https://github.com/b4b4r07/github-labeler).
